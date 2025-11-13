@@ -64,6 +64,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+       <!-- Apache POI OOXML 库，用于处理 Microsoft Office 文档-->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.4</version>
+        </dependency>
     </dependencies>
 
     <build>
