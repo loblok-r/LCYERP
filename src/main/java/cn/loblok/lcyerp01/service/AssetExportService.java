@@ -39,25 +39,13 @@ public class AssetExportService {
         XSSFSheet sheet = workbook.createSheet("资产明细");
 
         // 写标题
-        Row header = sheet.createRow(0);
-        String[] headers = {"资产编码","名称","类别","公司","部门","原值","状态","采购日期","位置"};
-        for (int i = 0; i < headers.length; i++) {
-            header.createCell(i).setCellValue(headers[i]);
-        }
+        writeHeader(sheet, 0);
 
         // 写数据
         for (int i = 0; i < allAssets.size(); i++) {
             AssetDetail a = allAssets.get(i);
             Row row = sheet.createRow(i + 1);
-            row.createCell(0).setCellValue(a.getAssetCode());
-            row.createCell(1).setCellValue(a.getAssetName());
-            row.createCell(2).setCellValue(a.getCategoryName());
-            row.createCell(3).setCellValue(a.getCompanyName());
-            row.createCell(4).setCellValue(a.getDeptName());
-            row.createCell(5).setCellValue(a.getOriginalValue().doubleValue());
-            row.createCell(6).setCellValue(getStatusText(a.getStatus()));
-            row.createCell(7).setCellValue(a.getPurchaseDate().toString());
-            row.createCell(8).setCellValue(a.getLocation());
+            writeAssetRow(row, a);
         }
 
         // 写文件
