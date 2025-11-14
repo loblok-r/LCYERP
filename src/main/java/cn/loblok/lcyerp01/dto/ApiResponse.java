@@ -1,24 +1,31 @@
 package cn.loblok.lcyerp01.dto;
 
+import lombok.Data;
+
+@Data
 public class ApiResponse<T> {
-    private int code;
-    private String message;
     private T data;
+    private String message;
+    private boolean success;
 
+    private ApiResponse(boolean success, T data, String message) {
+        this.success = success;
+        this.data = data;
+        this.message = message;
+    }
+
+    // 成功：带数据
     public static <T> ApiResponse<T> success(T data) {
-        ApiResponse<T> res = new ApiResponse<>();
-        res.code = 200;
-        res.message = "success";
-        res.data = data;
-        return res;
+        return new ApiResponse<>(true, data, null);
     }
 
-    public static ApiResponse<String> error(String message) {
-        ApiResponse<String> res = new ApiResponse<>();
-        res.code = 500;
-        res.message = message;
-        return res;
+    // 成功：无数据（如 void 操作）
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, null, null);
     }
 
-    // getter/setter...
+    // 错误：适用于任何泛型 T（data 为 null）
+    public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, null, message);
+    }
 }

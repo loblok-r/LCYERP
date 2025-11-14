@@ -6,6 +6,10 @@ spring:
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 16   # 👈 必须 ≥ 你的 exportExecutor 线程数
+      minimum-idle: 4         # 可选：保持少量空闲连接
+      connection-timeout: 30000
   jpa:
     hibernate:
       # 在第一次运行时自动创建表，之后建议改为 'none' 或 'validate'
