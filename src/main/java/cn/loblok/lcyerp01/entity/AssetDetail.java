@@ -6,6 +6,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
@@ -54,10 +55,10 @@ public class AssetDetail {
     private BigDecimal accumulatedDepreciation;
     @Basic
     @Column(name = "purchase_date")
-    private Date purchaseDate;
+    private LocalDate purchaseDate;
     @Basic
     @Column(name = "use_start_date")
-    private Date useStartDate;
+    private LocalDate  useStartDate;
     @Basic
     @Column(name = "expected_life_months")
     private int expectedLifeMonths;

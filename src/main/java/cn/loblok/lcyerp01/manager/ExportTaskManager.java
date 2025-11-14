@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -43,10 +44,13 @@ public class ExportTaskManager {
             Math.min(16, Runtime.getRuntime().availableProcessors() * 2)
     );
     private final AssetDetailRepository repository;
+    private final AssetValidationCoordinator validationCoordinator; // final + 构造器注入
     private final String tempDir = "D:\\面试\\找工作\\temp\\";
 
-    public ExportTaskManager(AssetDetailRepository repository) {
+    public ExportTaskManager(AssetDetailRepository repository,
+                             AssetValidationCoordinator validationCoordinator) {
         this.repository = repository;
+        this.validationCoordinator = validationCoordinator;
     }
     public String submitExportTask() {
         String taskId = "task_" + System.currentTimeMillis();
@@ -63,6 +67,17 @@ public class ExportTaskManager {
     private void processExport(String taskId) {
         ExportTask task = tasks.get(taskId);
         try {
+
+            // 1. 加载全量数据（或分页加载）
+            List<AssetDetail> assets = repository.findAll(); // 或分批查
+
+            // 2. 【新增】前置校验
+            if (!validationCoordinator.runValidations(assets)) {
+                task.setStatus(ExportStatus.FAILED);//数据校验未通过
+                return;
+            }
+
+
             task.setStatus(ExportStatus.RUNNING);
             String finalFile = doParallelExport(taskId);
             task.setOutputFile(finalFile);
