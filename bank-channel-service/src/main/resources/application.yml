@@ -1,0 +1,18 @@
+server:
+  port: 8039
+
+spring:
+  application:
+    name: bank-channel-service
+    #配置rabbitMq 服务器
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 4  # 总共尝试4次（1次原始 + 3次重试）
+        default-requeue-rejected: false  # 失败不 requeue，走 DLQ
+    host: 127.0.0.1
+    port: 5672
+    username: root
+    password: root

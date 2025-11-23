@@ -1,0 +1,40 @@
+server:
+  port: 8029
+
+spring:
+  application:
+    name: erp-core
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+  datasource:
+    url: jdbc:mysql://localhost:3306/erp_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 16   # 👈 必须 ≥ 你的 exportExecutor 线程数
+      minimum-idle: 4         # 可选：保持少量空闲连接
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      # 在第一次运行时自动创建表，之后建议改为 'none' 或 'validate'
+      ddl-auto: update
+    show-sql: true # 开发时显示SQL语句
+    properties:
+      hibernate:
+        format_sql: true # 格式化SQL输出
+    #配置rabbitMq 服务器
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: root
+    password: root
+
+payroll:
+  dispatch:
+    cron: "0/20 * * * * ?"   # 本地每20秒跑一次（会被 prod 覆盖）
+  reconcile:
+    cron: "0/40 * * * * ?"   # 本地每40秒跑一次（会被 prod 覆盖）
