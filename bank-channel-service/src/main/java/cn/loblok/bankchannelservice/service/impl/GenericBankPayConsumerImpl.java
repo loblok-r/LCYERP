@@ -5,18 +5,17 @@ import cn.loblok.bankchannelservice.config.CcbBankConfig;
 import cn.loblok.bankchannelservice.config.CmbBankConfig;
 import cn.loblok.bankchannelservice.config.IcbcBankConfig;
 import cn.loblok.bankchannelservice.service.GenericBankPayConsumer;
+import cn.loblok.bankchannelservice.util.RabbitUtil;
 import cn.loblok.common.Enum.PayrollStatus;
+import cn.loblok.common.dao.PayrollDetailRepository;
 import cn.loblok.common.dto.PayRequest;
 import cn.loblok.common.dto.PayResult;
-import cn.loblok.common.exception.TemporaryBankException;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 @Service
 @Slf4j
@@ -29,6 +28,7 @@ public class GenericBankPayConsumerImpl implements GenericBankPayConsumer {
     private IcbcBankConfig icbcBankConfig;
     @Autowired private CmbBankConfig cmbBankConfig;
     @Autowired private CcbBankConfig ccbBankConfig;
+    @Autowired private PayrollDetailRepository payrollDetailRepository;
 
 
     // 工行消费者
@@ -64,55 +64,65 @@ public class GenericBankPayConsumerImpl implements GenericBankPayConsumer {
 
     @Override
     public void processPay(PayRequest request, Channel channel, Message message, BankConfig config) {
+
+        String bizId = request.getBizId();
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
+
         try {
-            if (callbackService.isProcessed(request.getBizId())) {
-                channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            // 使用 JPQL / MyBatis 更新：仅当状态为 SUBMITTED_TO_MQ 时才更新为 PROCESSING
+            int updated = payrollDetailRepository.updateStatusIfMatch(
+                    bizId,
+                    PayrollStatus.SUBMITTED_TO_MQ,
+                    PayrollStatus.PROCESSING
+            );
+
+            if (updated == 0) {
+                // 说明状态已变更（可能是重复消息，或已被其他消费者处理）
+                log.info("bizId={} 状态不可变，跳过", bizId);
+                channel.basicAck(deliveryTag, false);
                 return;
             }
 
-            PayResult result = config.getStrategy().send(request);
-
-            if(config.isSuccess(result.getCode())){
-                // 成功：ACK
-                callbackService.updateStatus(request.getBizId(), PayrollStatus.SUCCESS);
-                channel.basicAck(deliveryTag, false);
-
-            }else if(isPermanentError(config.getBankCode(), result)){
-                // 永久失败：拒绝消息 → 进入 DLQ
-                log.warn("永久性错误，拒绝消息进入 DLQ, bizId={}", request.getBizId());
-                channel.basicNack(deliveryTag, false, false); // requeue = false
-
-            }else{
-                // 临时失败：如何处理？
-                // 方案A：NACK 重试（RabbitMQ 自动重试）
-                // 方案B：发到重试队列（更可控）
-//                channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true); // requeue=true
-//                return;
-                // 临时失败：抛异常 → 触发 Spring Retry 机制
-                throw new TemporaryBankException("银行临时错误: " + result.getCode());
+            // === 关键：在这里做有限次、带退避的重试 ===
+            int maxRetries = 3;
+            for (int attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    PayResult result = config.getStrategy().send(request);
+                    if (config.isSuccess(result.getCode())) {
+                        // 成功：ACK
+                        callbackService.updateStatus(bizId, PayrollStatus.SUCCESS);
+                        channel.basicAck(deliveryTag, false);
+                        return;
+                    } else if (isPermanentError(config.getBankCode(), result)) {
+                        // 永久失败：拒绝消息 → 进入 DLQ
+                       // payrollDetailRepository.updateStatus(Long.parseLong(bizId), PayrollStatus.FAILED, 1);
+                        log.warn("永久性错误，拒绝消息进入 DLQ, bizId={}", request.getBizId());
+                        channel.basicNack(deliveryTag, false, false); // requeue = false
+                        return;
+                    }
+                    // 否则视为临时错误，继续重试
+                } catch (Exception e) {
+                    log.warn("bizId={}, 第{}次尝试失败: {}", bizId, attempt + 1, e.getMessage());
+                }
+                // 最后一次不 sleep
+                if (attempt < maxRetries) {
+                    try {
+                        Thread.sleep((long) Math.pow(2, attempt) * 1000); // 1s, 2s, 4s...
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
             }
-
-
-        } catch (TemporaryBankException e) {
-            // 临时异常：重试（由 Spring Retry 控制，或手动 NACK requeue=true）
-            log.warn("临时错误，将重试, bizId={}", request.getBizId());
-            try {
-                channel.basicNack(deliveryTag, false, true); // requeue = true
-            } catch (IOException ex) {
-                log.error("NACK(requeue=true) 失败", ex);
-            }
-        } catch (Exception e) {
-            // 其他未知异常：视为临时错误，重试
-            log.error("未知异常，将重试, bizId={}", request.getBizId(), e);
-            try {
-                channel.basicNack(deliveryTag, false, true);
-            } catch (IOException ex) {
-                log.error("NACK(requeue=true) 失败", ex);
-            }
+            // 重试耗尽，仍失败 → 永久失败 or 进 DLQ
+            //payrollDetailRepository.updateStatus(Long.parseLong(bizId), PayrollStatus.FAILED, 1);
+            channel.basicNack(deliveryTag, false, false);
+        }catch (Exception e) {
+            // 兜底：如果前面任何地方出错（包括 updateStatus），也要确保 ACK/NACK
+            log.error("处理消息异常，deliveryTag={}, bizId={}", deliveryTag, bizId, e);
+            RabbitUtil.safeNack(channel, deliveryTag, false); // 进 DLQ
         }
     }
-
 
 
     /**

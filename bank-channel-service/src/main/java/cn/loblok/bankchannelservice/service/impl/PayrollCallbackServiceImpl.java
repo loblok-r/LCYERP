@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
-
 //在银行代发处理完成后（无论成功或失败），将结果“回调”回薪资主流程，更新对应薪资明细（PayrollDetail）的状态
 @Service
 @Slf4j

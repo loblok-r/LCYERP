@@ -1,8 +1,7 @@
 package cn.loblok.erpcore.service;
 
 import cn.loblok.common.Enum.PayrollStatus;
-import cn.loblok.erpcore.entity.PayrollDetail;
-import org.springframework.transaction.annotation.Transactional;
+import cn.loblok.common.entity.PayrollDetail;
 
 import java.util.List;
 
@@ -20,4 +19,5 @@ public interface PayrollDetailService {
     List<PayrollDetail> findSentRecordsBatch(long lastId, int limit);
 
     boolean isProcessed(String bizId);
+
 }

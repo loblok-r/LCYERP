@@ -1,6 +1,5 @@
 package cn.loblok.erpcore.event;
 
-import cn.loblok.common.Enum.PayrollStatus;
 import lombok.Data;
 
 @Data

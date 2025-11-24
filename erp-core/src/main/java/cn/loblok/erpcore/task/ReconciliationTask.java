@@ -1,7 +1,7 @@
 package cn.loblok.erpcore.task;
 
 import cn.loblok.common.Enum.PayrollStatus;
-import cn.loblok.erpcore.entity.PayrollDetail;
+import cn.loblok.common.entity.PayrollDetail;
 import cn.loblok.erpcore.service.Impl.PayrollDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

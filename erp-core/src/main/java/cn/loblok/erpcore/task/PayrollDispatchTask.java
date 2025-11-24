@@ -1,6 +1,6 @@
 package cn.loblok.erpcore.task;
 
-import cn.loblok.erpcore.entity.PayrollDetail;
+import cn.loblok.common.entity.PayrollDetail;
 import cn.loblok.erpcore.service.Impl.AlertService;
 import cn.loblok.erpcore.service.Impl.PayrollDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +12,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 负责“执行 + 补偿”
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

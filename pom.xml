@@ -20,6 +20,7 @@
         <module>bank-channel-service</module>
         <module>erp-core</module>
         <module>common</module>
+        <module>payroll-engine</module>
     </modules>
 
     <properties>
@@ -87,6 +88,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
             <version>2.5.4</version>
+        </dependency>
+
+        <!-- 如果用多数据源或租户隔离，可加 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
+            <version>4.2.0</version> <!-- 可选 -->
         </dependency>
     </dependencies>
 

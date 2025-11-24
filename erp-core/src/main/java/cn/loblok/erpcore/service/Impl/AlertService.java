@@ -1,6 +1,6 @@
 package cn.loblok.erpcore.service.Impl;
 
-import cn.loblok.erpcore.entity.PayrollDetail;
+import cn.loblok.common.entity.PayrollDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

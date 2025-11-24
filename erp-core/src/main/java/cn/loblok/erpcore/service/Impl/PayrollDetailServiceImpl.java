@@ -1,9 +1,9 @@
 package cn.loblok.erpcore.service.Impl;
 
 import cn.loblok.common.Enum.PayrollStatus;
-import cn.loblok.erpcore.dao.PayrollDetailRepository;
+import cn.loblok.common.dao.PayrollDetailRepository;
 import cn.loblok.common.dto.PayRequest;
-import cn.loblok.erpcore.entity.PayrollDetail;
+import cn.loblok.common.entity.PayrollDetail;
 import cn.loblok.erpcore.event.MessageConfirmEvent;
 import cn.loblok.erpcore.service.PayrollDetailService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -26,7 +27,7 @@ import java.util.List;
 public class PayrollDetailServiceImpl implements PayrollDetailService {
 
     private final PayrollDetailRepository payrollDetailRepository;
-    private  final AlertService alertService;
+    //private  final AlertService alertService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -35,13 +36,20 @@ public class PayrollDetailServiceImpl implements PayrollDetailService {
     @Transactional
     public void handleMessageConfirm(MessageConfirmEvent event) {
         try {
-            Long bizId = Long.parseLong(event.getBizId());
-            if (event.isAck()) {
-                transitionStatus(bizId, PayrollStatus.SUBMITTED_TO_MQ);
-                log.info("✅ 消息确认成功, bizId={}", bizId);
-            } else {
-                transitionStatus(bizId, PayrollStatus.MQ_SEND_FAILED);
-                log.error("❌ 消息确认失败, bizId={}, 原因: {}", bizId, event.getCause());
+            String bizId = event.getBizId();
+
+            PayrollStatus target = event.isAck() ?
+                    PayrollStatus.SUBMITTED_TO_MQ : PayrollStatus.MQ_SEND_FAILED;
+
+            // 只允许从 PENDING 转移
+            int updated = payrollDetailRepository.updateStatusIfMatch(
+                    bizId,
+                    PayrollStatus.PENDING,
+                    target
+            );
+
+            if (updated == 0) {
+                log.warn("bizId={} 状态不可变，跳过 confirm 处理", bizId);
             }
         } catch (Exception e) {
             log.error("处理消息确认事件异常", e);
@@ -56,6 +64,12 @@ public class PayrollDetailServiceImpl implements PayrollDetailService {
     @Override
     public void processSingle(PayrollDetail detail) {
 
+        // 防止同一 bizId 被多次处理
+        if (detail.getStatus() != PayrollStatus.PENDING) {
+            log.info("bizId={} 状态已变更（{}），跳过发送", detail.getBizId(), detail.getStatus());
+            return;
+        }
+        //这样即使调度任务重复扫描到同一条记录，也会因状态不是 PENDING 而跳过
         // 1. 获取银行通道
         //Optional<String> bankCode = configRepository.findBankCodeByCompanyId(detail.getCompanyId());
         String bankCode = detail.getBankCode(); // 直接使用实体中的快照值
@@ -101,7 +115,7 @@ public class PayrollDetailServiceImpl implements PayrollDetailService {
             throw new IllegalArgumentException("记录不存在");
         }
 
-        PayrollStatus current = PayrollStatus.valueOf(detail.getStatus());
+        PayrollStatus current = detail.getStatus();
         if (!current.canTransitionTo(newStatus)) {
             log.warn("❌ 非法状态流转: {} -> {}", current, newStatus);
             throw new IllegalStateException(
@@ -109,7 +123,7 @@ public class PayrollDetailServiceImpl implements PayrollDetailService {
             );
         }
 
-        payrollDetailRepository.updateStatus(id, newStatus.name(), detail.getRetryCount());
+        payrollDetailRepository.updateStatus(id, newStatus, detail.getRetryCount());
     }
 
     @Override
@@ -132,6 +146,24 @@ public class PayrollDetailServiceImpl implements PayrollDetailService {
         return false;
     }
 
+    /**
+     * 触发满足条件的发薪动作
+     */
+    public int markThisMonthAsPending(String payrollMonth, Long companyId) {
+        return payrollDetailRepository.updateStatusToPending(PayrollStatus.SCHEDULED,PayrollStatus.PENDING,payrollMonth,companyId);
+    }
 
+    /**
+     * 触发满足条件的薪资计算动作
+     */
+    public void markThisMonthForCalculation(String payrollMonth, Long companyId) {
+        int count = payrollDetailRepository.updateStatusToPending(
+                PayrollStatus.DRAFT,
+                PayrollStatus.PENDING_CALCULATION,
+                payrollMonth,companyId);
 
+        if(count > 0 ){
+            log.info("已激活 {} 条 {} 月薪资记录进入发薪队列", count, payrollMonth);
+        }
+    }
 }

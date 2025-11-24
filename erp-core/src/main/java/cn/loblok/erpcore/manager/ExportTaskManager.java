@@ -29,7 +29,6 @@ import java.util.zip.ZipOutputStream;
 public class ExportTaskManager {
     private final Map<String, ExportTask> tasks = new ConcurrentHashMap<>();
 
-
     //用于提交顶层任务
     private final ExecutorService exportExecutor = Executors.newFixedThreadPool(
             Math.min(16,Runtime.getRuntime().availableProcessors() * 2)
@@ -280,9 +279,4 @@ public class ExportTaskManager {
             default -> "未知";
         };
     }
-
-
-
-
-
 }
