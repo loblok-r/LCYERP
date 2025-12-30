@@ -28,4 +28,5 @@ public class Company {
     @Column(name = "created_at")
     private Timestamp createdAt;
 
+
 }

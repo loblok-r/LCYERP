@@ -26,13 +26,9 @@ public interface PayrollDetailRepository extends JpaRepository<PayrollDetail,Lon
 
     //    Page<PayrollDetail> findByStatus(String status, Pageable pageable);
     //统一改为游标分页
-    @Query("SELECT p FROM PayrollDetail p WHERE p.status = 'PENDING' AND p.id > :lastId ORDER BY p.id ASC")
-    List<PayrollDetail> findPendingBatch(@Param("lastId") long lastId, Pageable pageable);
+    @Query("SELECT p FROM PayrollDetail p WHERE p.status = :status AND p.id > :lastId ORDER BY p.id ASC")
+    List<PayrollDetail> findByStatusAndIdGreaterThan(@Param("status") PayrollStatus status, @Param("lastId") long lastId, Pageable pageable);
 
-
-    // PayrollDetailRepository.java
-    @Query("SELECT p FROM PayrollDetail p WHERE p.status = 'SENT' AND p.id > :lastId ORDER BY p.id ASC")
-    List<PayrollDetail> findSentRecordsBatch(@Param("lastId") long lastId, Pageable pageable);
 
     @Modifying
     @Transactional
@@ -73,4 +69,6 @@ public interface PayrollDetailRepository extends JpaRepository<PayrollDetail,Lon
 
     Optional<BigDecimal> findTotalAmountByStatusAndMonth(PayrollStatus payrollStatus, String payrollMonth, Long companyId);
 
+
+    PayrollDetail findByBizId(String bizId);
 }

@@ -33,7 +33,7 @@ public class ReconciliationTask {
 
         while (processed < MAX_PROCESS) {
 
-            List<PayrollDetail> batch = payrollDetailServiceImpl.findSentRecordsBatch(lastId, batchSize);
+            List<PayrollDetail> batch = payrollDetailServiceImpl.findBatchByStatus(PayrollStatus.SUCCESS,lastId, batchSize);
             if (batch.isEmpty()) break;
 
             for (PayrollDetail detail : batch) {

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 预算查询控制器
+ */
 @RestController
 @RequestMapping("/api/budget")
 public class BudgetController {
@@ -22,6 +25,15 @@ public class BudgetController {
     @Autowired
     private BudgetQueryService service;
 
+    /**
+     * 查询预算列表
+     * @param deptId 部门ID
+     * @param year 年份
+     * @param startMonth 开始月份
+     * @param endMonth 结束月份
+     * @param status 预算状态
+     * @return
+     */
     @GetMapping("/list")
     public ResponseEntity<List<BudgetRecord>> listBudgets(
             @RequestParam Integer deptId,
@@ -39,6 +51,15 @@ public class BudgetController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 获取预算列表分页
+     * @param deptId 部门ID
+     * @param year 年份
+     * @param status 预算状态
+     * @param page 页码
+     * @param size 页大小
+     * @return
+     */
     @GetMapping("/listpage")
     public ResponseEntity<Page<BudgetRecord>> getPage(
             @RequestParam Integer deptId,
@@ -55,6 +76,16 @@ public class BudgetController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * 获取预算列表分页(游标版）
+     * @param deptId 部门ID
+     * @param year 年份
+     * @param status 预算状态
+     * @param cursorTime 游标时间
+     * @param cursorId 游标ID
+     * @param size 页大小
+     * @return
+     */
     @GetMapping("/listpage/cursor")
     public BudgetPageResponse getPage(
             @RequestParam Integer deptId,

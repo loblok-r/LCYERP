@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-
+/**
+ * 薪资计算实现类
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

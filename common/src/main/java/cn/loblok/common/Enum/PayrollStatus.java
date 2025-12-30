@@ -37,6 +37,7 @@ public enum PayrollStatus {
             case CALCULATION_FAILED -> target == CALCULATING; // 允许重试
             case SCHEDULED -> target == PENDING || target == CANCELLED;
             case PENDING    -> target == SUBMITTED_TO_MQ || target == MQ_SEND_FAILED;
+            case MQ_SEND_FAILED -> target == SUBMITTED_TO_MQ;
             case SUBMITTED_TO_MQ  -> target == PROCESSING;
             case PROCESSING  -> target == SUCCESS || target == FAILED;
             default -> false;

@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 财务系统资产数据校验任务
+ */
 @Component
 public class FinanceValidationTask implements AssetValidationTask {
     @Override

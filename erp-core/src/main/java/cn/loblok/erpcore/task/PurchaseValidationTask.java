@@ -5,7 +5,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-
+/**
+ * 采购系统资产数据校验任务
+ */
 @Component
 public class PurchaseValidationTask implements AssetValidationTask {
 

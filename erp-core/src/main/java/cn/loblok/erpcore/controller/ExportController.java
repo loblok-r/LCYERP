@@ -16,20 +16,30 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 导出控制器
+ */
 @RestController
 @RequestMapping("/export")
 public class ExportController {
 
     @Autowired
     private ExportTaskManager taskManager;
-    //提交导出任务（触发异步处理）
+    /**
+     * 异步导出,提交导出任务（触发异步处理）
+     * @return
+     */
     @PostMapping("/async")
     public ApiResponse<String> submitExport() {
         String taskId = taskManager.submitExportTask();
         return ApiResponse.success(taskId);
     }
 
-    //轮询任务状态（等待完成）
+    /**
+     * 获取导出任务状态,轮询任务状态（等待完成）
+     * @param taskId
+     * @return
+     */
     @GetMapping("/status/{taskId}")
     public ApiResponse<ExportTask> getExportStatus(@PathVariable String taskId) {
         ExportTask task = taskManager.getTask(taskId);
@@ -39,7 +49,12 @@ public class ExportController {
         return ApiResponse.success(task);
     }
 
-    //下载导出文件（zip文件）
+    /**
+     * 下载导出文件（获取结果）
+     * @param taskId
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("/download/{taskId}")
     public void downloadExport(@PathVariable String taskId, HttpServletResponse response) throws IOException {
         ExportTask task = taskManager.getTask(taskId);
@@ -60,6 +75,14 @@ public class ExportController {
         response.setHeader("Content-Disposition", "attachment; filename=" + file.getFileName());
         Files.copy(file, response.getOutputStream());
     }
+
+    /**
+     * 错误响应
+     * @param response
+     * @param status
+     * @param message
+     * @throws IOException
+     */
     private void writeJsonErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json;charset=UTF-8");
@@ -71,6 +94,7 @@ public class ExportController {
         String json = new ObjectMapper().writeValueAsString(error);
         response.getWriter().write(json);
     }
+
     //下载导出文件（获取结果）
 //    @GetMapping("/download/{taskId}")
 //    public void downloadExportV(@PathVariable String taskId, HttpServletResponse response) throws IOException {

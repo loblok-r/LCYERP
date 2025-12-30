@@ -9,7 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/**
+ * 预算记录数据访问接口
+ */
 public interface BudgetRecordRepository extends JpaRepository<BudgetRecord, Long> {
     // 我们将在这里定义查询方法
     // Spring Data JPA 会自动为你实现这个方法

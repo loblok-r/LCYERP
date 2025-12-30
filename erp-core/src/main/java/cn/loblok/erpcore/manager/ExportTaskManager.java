@@ -24,7 +24,9 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
+/**
+ * 批量导出任务管理器
+ */
 @Component
 public class ExportTaskManager {
     private final Map<String, ExportTask> tasks = new ConcurrentHashMap<>();

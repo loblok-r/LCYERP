@@ -14,14 +14,14 @@ import java.time.LocalDateTime;
 public class BudgetRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 主键ID
 
-    private Integer deptId;
-    private String projectCode;
-    private Integer year;
-    private Byte month;
-    private BigDecimal amount;
-    private Byte status;
+    private Integer deptId; // 部门ID
+    private String projectCode; // 项目编码
+    private Integer year; // 年份
+    private Byte month; // 月份
+    private BigDecimal amount; // 金额
+    private Byte status; // 状态
 
     @Column(name = "version", length = 20)
     private String version;

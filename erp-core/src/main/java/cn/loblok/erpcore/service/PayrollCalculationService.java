@@ -9,5 +9,6 @@ public interface PayrollCalculationService {
     void calculatePendingPayrolls();
 
 
+    // 计算单个薪资单
     void doCalculate(PayrollDetail detail);
 }

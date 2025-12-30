@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * ✅ 关键点：
+ *
  *
  * CountDownLatch 等待所有任务完成；
  * AtomicBoolean 共享状态，任一失败即标记整体失败；
@@ -44,13 +44,13 @@ public class AssetValidationCoordinator {
             validatorExecutor.submit(() -> {
                 try {
                     if (!task.validate(assets)) {
-                        System.out.println("❌ [" + task.getSourceName() + "] 校验失败");
+                        System.out.println("[" + task.getSourceName() + "] 校验失败");
                         allPassed.set(false);
                     } else {
-                        System.out.println("✅ [" + task.getSourceName() + "] 校验通过");
+                        System.out.println("[" + task.getSourceName() + "] 校验通过");
                     }
                 } catch (Exception ex) {
-                    System.err.println("⚠️ [" + task.getSourceName() + "] 校验异常: " + ex.getMessage());
+                    System.err.println("[" + task.getSourceName() + "] 校验异常: " + ex.getMessage());
                     allPassed.set(false);
                 } finally {
                     latch.countDown();

@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
+/**
+ * 资产管理
+ */
 @RestController
 @RequestMapping("/api/asset")
 public class AssetController {
@@ -19,6 +21,9 @@ public class AssetController {
     private AssetExportService exportService;
 
 
+    /**
+     * 获取 Excel 文件，用 POST，符合“生成”语义
+     */
     @PostMapping("/export/v1")
     public ResponseEntity<ApiResponse<String>> exportV1Debug(
             @RequestParam(defaultValue = "assets_v1.xlsx") String filename) {
@@ -30,7 +35,7 @@ public class AssetController {
 //        }
 
 //        String outputPath = "/tmp/" + filename; // Linux/macOS
-         String outputPath = "D:\\面试\\找工作\\temp\\" + filename; // Windows
+         String outputPath = "D:\\0000E\\Work\\Temp\\erp_outpath\\" + filename; // Windows
 
         try {
             long start = System.currentTimeMillis();
@@ -50,7 +55,10 @@ public class AssetController {
         }
     }
 
-    @GetMapping("/export/excel-stream") // 改用 GET，符合“下载”语义
+    /**
+     * 获取 Excel 文件流，用 GET，符合“下载”语义
+     */
+    @GetMapping("/export/excel-stream")
     public void exportExcelStream(HttpServletResponse response) throws IOException {
         String filename = "assets_export_" + System.currentTimeMillis() + ".xlsx";
         String outputPath = "D:\\面试\\找工作\\temp\\" + filename;

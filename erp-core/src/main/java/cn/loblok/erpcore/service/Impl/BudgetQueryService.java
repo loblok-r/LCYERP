@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
+/**
+ * 预算查询服务
+ */
 @Service
 public class BudgetQueryService {
 

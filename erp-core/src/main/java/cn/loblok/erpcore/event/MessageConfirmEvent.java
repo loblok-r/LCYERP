@@ -2,6 +2,9 @@ package cn.loblok.erpcore.event;
 
 import lombok.Data;
 
+/**
+ * 消息确认事件
+ */
 @Data
 public class MessageConfirmEvent {
     private final String bizId;

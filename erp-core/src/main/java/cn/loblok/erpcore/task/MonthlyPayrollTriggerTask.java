@@ -33,7 +33,7 @@ public class MonthlyPayrollTriggerTask {
             // 🔒【关键风控点】发薪前资金校验
             if (!financeRiskService.isFundsSufficientForPayroll(companyId, getMonth())) {
                 String errorMsg = String.format(
-                        "❌ 发薪风控拦截：公司 %d 在 %s 月薪资发放资金不足",
+                        "发薪风控拦截：公司 %d 在 %s 月薪资发放资金不足",
                         companyId, payrollMonth
                 );
                 log.error(errorMsg);
@@ -41,10 +41,10 @@ public class MonthlyPayrollTriggerTask {
                 return; // ⛔ 不激活发薪！
             }
 
-            // ✅ 资金充足，正常激活
+            //资金充足，正常激活
             int count = payrollService.markThisMonthAsPending(payrollMonth, companyId);
             if (count > 0) {
-                log.info("✅ 已激活 {} 条 {} 月薪资记录进入发薪队列", count, payrollMonth);
+                log.info("已激活 {} 条 {} 月薪资记录进入发薪队列", count, payrollMonth);
             }
 
         } catch (Exception e) {

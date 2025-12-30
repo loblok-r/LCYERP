@@ -4,7 +4,9 @@ import cn.loblok.erpcore.entity.AssetDetail;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
+/**
+ * 设备资产信息校验任务
+ */
 @Component
 public class EquipmentValidationTask implements AssetValidationTask {
 

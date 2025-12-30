@@ -38,6 +38,9 @@ public class AlertService {
         return card.substring(0, 4) + "********" + card.substring(len - 4);
     }
 
+    /**
+     * 模拟发送告警（本地测试用日志代替邮件/短信）
+     */
     public void notifyOps(String message) {
         log.error(message);
     }

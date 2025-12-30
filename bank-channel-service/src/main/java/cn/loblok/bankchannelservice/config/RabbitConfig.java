@@ -35,7 +35,7 @@ public class RabbitConfig {
         return BindingBuilder.bind(icbcPayQueue())
                 .to(payExchange())
                 .with("icbc")// routing key 必须与 erp-core 发送时一致
-                .noargs(); // 👈 关键！结束绑定配置
+                .noargs(); // 结束绑定配置
     }
 
     // --- ICBC 死信队列 ---
@@ -72,7 +72,7 @@ public class RabbitConfig {
         return BindingBuilder.bind(cmbPayQueue())
                 .to(payExchange())
                 .with("cmb")// routing key 必须与 erp-core 发送时一致
-                .noargs(); // 👈 关键！结束绑定配置
+                .noargs(); // 结束绑定配置
     }
 
     @Bean
@@ -109,7 +109,7 @@ public class RabbitConfig {
         return BindingBuilder.bind(ccbPayQueue())
                 .to(payExchange())
                 .with("ccb")// routing key 必须与 erp-core 发送时一致
-                .noargs(); // 👈 关键！结束绑定配置
+                .noargs(); // 结束绑定配置
     }
 
     // --- CCB 死信交换机 ---
